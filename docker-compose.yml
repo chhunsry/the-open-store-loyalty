@@ -1,0 +1,21 @@
+services:
+  web:
+    build: .
+    env_file: .env
+    ports:
+      - "8000:8000"
+    volumes:
+      - loyalty-data:/app/data
+    restart: unless-stopped
+  bot:
+    build: .
+    env_file: .env
+    command: python -m app.bot
+    volumes:
+      - loyalty-data:/app/data
+    restart: unless-stopped
+    depends_on:
+      - web
+volumes:
+  loyalty-data:
+

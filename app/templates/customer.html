@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% block title %}{{ customer.name }} · The Open Store{% endblock %}
+{% block content %}
+<a class="back-link" href="/admin">← Back to customers</a>
+{% if message %}<div class="notice success">{{ message }}</div>{% endif %}
+{% if error %}<div class="notice error">{{ error }}</div>{% endif %}
+<section class="customer-grid">
+  <div>
+    <article class="profile-card">
+      <span class="avatar big">{{ customer.name[0]|upper }}</span>
+      <div><span class="eyebrow">Customer profile</span><h1>{{ customer.name }}</h1><p>{{ customer.phone }}</p></div>
+      <button class="icon-button" onclick="document.getElementById('edit-customer').showModal()" aria-label="Edit customer">✎</button>
+    </article>
+    <article class="balance-card">
+      <span>Current balance</span><strong>{{ "{:,}".format(customer.points) }}</strong><small>reward points</small>
+      <div class="spark">✦</div>
+    </article>
+  </div>
+  <article class="panel adjust-card">
+    <span class="eyebrow">Adjust balance</span><h2>Add or subtract points</h2>
+    <form method="post" action="/admin/customers/{{ customer.id }}/points" class="stack-form">
+      <input type="hidden" name="csrf" value="{{ csrf }}">
+      <label>Point change
+        <input type="number" name="amount" placeholder="e.g. 50 or -20" min="-1000000" max="1000000" required>
+        <small>Use a minus sign to subtract points.</small>
+      </label>
+      <label>Note (optional)<textarea name="note" maxlength="200" placeholder="Purchase reward, redemption…"></textarea></label>
+      <button class="button dark">Update points <span>→</span></button>
+    </form>
+  </article>
+</section>
+<section class="panel history">
+  <div class="panel-head"><div><span class="eyebrow">Timeline</span><h2>Point history</h2></div></div>
+  {% if history %}
+  <div class="history-list">
+    {% for item in history %}
+      <article>
+        <span class="change-icon {{ 'plus' if item.change > 0 else 'minus' }}">{{ '+' if item.change > 0 else '−' }}</span>
+        <div><strong>{{ item.note or ('Points added' if item.change > 0 else 'Points redeemed') }}</strong>
+          <small>{{ item.created_at }} · {{ item.actor }}</small></div>
+        <div class="history-value"><strong>{{ "{:+,}".format(item.change) }}</strong><small>Balance {{ "{:,}".format(item.balance_after) }}</small></div>
+      </article>
+    {% endfor %}
+  </div>
+  {% else %}<div class="empty"><span>✦</span><h3>No point history yet</h3><p>The first adjustment will appear here.</p></div>{% endif %}
+</section>
+<dialog id="edit-customer">
+  <form method="post" action="/admin/customers/{{ customer.id }}/edit" class="stack-form">
+    <div class="dialog-head"><h2>Edit customer</h2><button type="button" class="close" onclick="this.closest('dialog').close()">×</button></div>
+    <input type="hidden" name="csrf" value="{{ csrf }}">
+    <label>Customer name<input name="name" value="{{ customer.name }}" required maxlength="80"></label>
+    <label>Phone number<input name="phone" value="{{ customer.phone }}" required inputmode="tel"></label>
+    <button class="button primary">Save changes</button>
+  </form>
+</dialog>
+{% endblock %}
+

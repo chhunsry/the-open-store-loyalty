@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#9c4168">
+  <title>{% block title %}The Open Store Rewards{% endblock %}</title>
+  <link rel="stylesheet" href="{{ url_for('static', path='/style.css') }}">
+</head>
+<body>
+  <div class="petal petal-one"></div><div class="petal petal-two"></div>
+  <header class="site-header">
+    <a class="brand" href="/">
+      <span class="brand-mark">
+        <img src="{{ url_for('static', path='/logo.jpg') }}" alt="" onerror="this.hidden=true;this.nextElementSibling.hidden=false">
+        <span hidden>O</span>
+      </span>
+      <span><strong>The Open Store</strong><small>Little rewards, lovely moments</small></span>
+    </a>
+    <nav>
+      <a href="{{ business_url }}" target="_blank" rel="noopener">Our links ↗</a>
+      {% if admin %}
+        <a href="/admin">Dashboard</a>
+        <form method="post" action="/logout" class="inline-form">
+          <input type="hidden" name="csrf" value="{{ csrf }}">
+          <button class="link-button">Log out</button>
+        </form>
+      {% endif %}
+    </nav>
+  </header>
+  <main>{% block content %}{% endblock %}</main>
+  <footer>
+    <span>Made with care for The Open Store</span>
+    <a href="{{ business_url }}" target="_blank" rel="noopener">linktr.ee/theopenstore</a>
+  </footer>
+</body>
+</html>
+

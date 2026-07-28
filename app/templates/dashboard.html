@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+{% block title %}Dashboard · The Open Store{% endblock %}
+{% block content %}
+<section class="page-head">
+  <div><span class="eyebrow">Admin dashboard</span><h1>Welcome back, {{ admin.username }}.</h1>
+  <p>Keep every customer and reward in one tidy place.</p></div>
+  <button class="button primary" onclick="document.getElementById('new-customer').showModal()">＋ Add customer</button>
+</section>
+{% if message %}<div class="notice success">{{ message }}</div>{% endif %}
+{% if error %}<div class="notice error">{{ error }}</div>{% endif %}
+<section class="stats-grid">
+  <article><span>Customers</span><strong>{{ "{:,}".format(stats.customers) }}</strong><i>♡</i></article>
+  <article><span>Points in wallets</span><strong>{{ "{:,}".format(stats.points) }}</strong><i>✦</i></article>
+  <article><span>Point updates</span><strong>{{ "{:,}".format(stats.changes) }}</strong><i>↗</i></article>
+</section>
+<section class="panel">
+  <div class="panel-head">
+    <div><span class="eyebrow">Customer book</span><h2>All customers</h2></div>
+    <form method="get" class="search-small">
+      <input name="q" value="{{ q }}" placeholder="Search name or phone" aria-label="Search customers">
+      <button>Search</button>
+    </form>
+  </div>
+  {% if customers %}
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Customer</th><th>Phone</th><th>Balance</th><th>Updated</th><th></th></tr></thead>
+      <tbody>
+      {% for customer in customers %}
+        <tr>
+          <td><span class="avatar">{{ customer.name[0]|upper }}</span><strong>{{ customer.name }}</strong></td>
+          <td>{{ customer.phone }}</td>
+          <td><span class="point-pill">{{ "{:,}".format(customer.points) }} pts</span></td>
+          <td>{{ customer.updated_at[:10] }}</td>
+          <td><a class="row-link" href="/admin/customers/{{ customer.id }}">Manage →</a></td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+    <div class="empty"><span>♡</span><h3>No customers found</h3><p>Add your first customer or try another search.</p></div>
+  {% endif %}
+</section>
+<dialog id="new-customer">
+  <form method="post" action="/admin/customers" class="stack-form">
+    <div class="dialog-head"><div><span class="eyebrow">New record</span><h2>Add a customer</h2></div>
+      <button type="button" class="close" onclick="this.closest('dialog').close()">×</button></div>
+    <input type="hidden" name="csrf" value="{{ csrf }}">
+    <label>Customer name<input name="name" maxlength="80" placeholder="Sophea Chan" required></label>
+    <label>Phone number<input name="phone" inputmode="tel" placeholder="+855 12 345 678" required></label>
+    <button class="button primary">Save customer</button>
+  </form>
+</dialog>
+{% endblock %}
+

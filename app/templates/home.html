@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="hero">
+  <div class="hero-copy">
+    <span class="eyebrow">The Open Store Rewards Club</span>
+    <h1>Your lovely little <em>rewards</em> live here.</h1>
+    <p>Enter the phone number used at checkout to see your current points balance.</p>
+    <form class="lookup" method="get" action="/">
+      <label for="phone">Phone number</label>
+      <div class="field-row">
+        <input id="phone" name="phone" value="{{ phone }}" inputmode="tel"
+               autocomplete="tel" placeholder="+855 12 345 678" required>
+        <button class="button primary">Check my points <span>→</span></button>
+      </div>
+    </form>
+    {% if lookup_error %}<div class="notice error">{{ lookup_error }}</div>{% endif %}
+    {% if customer %}
+      <article class="points-card">
+        <div>
+          <span class="soft-label">Hello, {{ customer.name }}! ✨</span>
+          <strong>{{ "{:,}".format(customer.points) }}</strong>
+          <span>points available</span>
+        </div>
+        <div class="stamp">OPEN<br>REWARDS</div>
+      </article>
+    {% endif %}
+  </div>
+  <aside class="login-card">
+    <div class="mini-flower">✿</div>
+    <span class="eyebrow">Store team</span>
+    <h2>Admin login</h2>
+    <p>Manage customers and their points securely.</p>
+    {% if login_required %}<div class="notice">Please log in to continue.</div>{% endif %}
+    {% if login_error %}<div class="notice error">{{ login_error }}</div>{% endif %}
+    <form method="post" action="/login" class="stack-form">
+      <input type="hidden" name="csrf" value="{{ csrf }}">
+      <label>Username<input name="username" autocomplete="username" required></label>
+      <label>Password<input type="password" name="password" autocomplete="current-password" required></label>
+      <button class="button dark">Open dashboard <span>→</span></button>
+    </form>
+  </aside>
+</section>
+<section class="how-it-works">
+  <div><span>01</span><strong>Shop</strong><p>Use your phone number at checkout.</p></div>
+  <div><span>02</span><strong>Collect</strong><p>Earn points whenever the store adds them.</p></div>
+  <div><span>03</span><strong>Enjoy</strong><p>Ask our team how to use your rewards.</p></div>
+</section>
+{% endblock %}
+
