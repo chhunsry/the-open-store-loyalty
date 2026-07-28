@@ -1,9 +1,15 @@
 import logging
 import os
-import shlex
 
 from dotenv import load_dotenv
-from telegram import Update
+from telegram import (
+    BotCommand,
+    InlineKeyboardButton,
+    InlineKeyboardMarkup,
+    MenuButtonWebApp,
+    Update,
+    WebAppInfo,
+)
 from telegram.ext import Application, CommandHandler, ContextTypes
 
 from app.database import init_db
@@ -22,11 +28,33 @@ def is_admin(update: Update) -> bool:
     return bool(update.effective_user and update.effective_user.id in admin_ids())
 
 
+def web_url() -> str:
+    return os.getenv(
+        "PUBLIC_BASE_URL", "https://the-open-store-loyalty.onrender.com"
+    ).rstrip("/")
+
+
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    keyboard = InlineKeyboardMarkup(
+        [[
+            InlineKeyboardButton(
+                "🌷 Open Rewards Website",
+                web_app=WebAppInfo(url=web_url()),
+            )
+        ]]
+    )
     await update.message.reply_text(
         "🌷 Welcome to The Open Store Rewards!\n\n"
-        "Check your balance with:\n/points +85512345678\n\n"
-        "Visit us: https://linktr.ee/theopenstore"
+        "Tap the button below to check your points, or send:\n"
+        "/points +85512345678\n\n"
+        "Visit us: https://linktr.ee/theopenstore",
+        reply_markup=keyboard,
+    )
+
+
+async def myid(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    await update.message.reply_text(
+        f"Your Telegram user ID is: {update.effective_user.id}"
     )
 
 
@@ -92,14 +120,32 @@ async def subtract(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await adjust(update, context, -1)
 
 
+async def configure_bot(application: Application):
+    await application.bot.set_my_commands(
+        [
+            BotCommand("start", "Open The Open Store Rewards"),
+            BotCommand("points", "Check points using a phone number"),
+            BotCommand("myid", "Show your Telegram user ID"),
+            BotCommand("help", "Show bot instructions"),
+        ]
+    )
+    await application.bot.set_chat_menu_button(
+        menu_button=MenuButtonWebApp(
+            text="Rewards",
+            web_app=WebAppInfo(url=web_url()),
+        )
+    )
+
+
 def main():
     token = os.getenv("TELEGRAM_BOT_TOKEN")
     if not token:
         raise SystemExit("Set TELEGRAM_BOT_TOKEN in .env before starting the bot.")
     init_db()
-    application = Application.builder().token(token).build()
+    application = Application.builder().token(token).post_init(configure_bot).build()
     application.add_handler(CommandHandler("start", start))
     application.add_handler(CommandHandler("help", start))
+    application.add_handler(CommandHandler("myid", myid))
     application.add_handler(CommandHandler("points", lookup))
     application.add_handler(CommandHandler("customer", admin_customer))
     application.add_handler(CommandHandler("add", add))
@@ -109,4 +155,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
